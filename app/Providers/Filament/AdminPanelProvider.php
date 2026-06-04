@@ -12,7 +12,6 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -20,6 +19,12 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+/**
+ * AdminPanelProvider — Konfigurasi Filament Panel utama.
+ *
+ * Panel ini menjadi entry point semua user.
+ * Hak akses dikelola oleh Filament Shield berdasarkan role masing-masing.
+ */
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -29,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('EduGrade')
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
@@ -36,7 +42,13 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
-                'secondary'=> Color::Amber,
+                'secondary' => Color::Amber,
+            ])
+            ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                'Manajemen Pengguna',
+                'Data Master',
+                'Akademik',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -46,7 +58,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
