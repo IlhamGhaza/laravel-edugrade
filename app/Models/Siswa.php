@@ -10,7 +10,7 @@ class Siswa extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['user_id', 'nis', 'nama', 'kelas'];
+    protected $fillable = ['user_id', 'nis', 'nama', 'kelas_id'];
 
     protected static function boot()
     {
@@ -33,9 +33,15 @@ class Siswa extends Model
         return $this->hasMany(Nilai::class);
     }
 
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
+
     // Penerapan OOP
     public function lihatProfil()
     {
-        return $this->nis . ' - ' . $this->nama . ' - ' . $this->kelas;
+        $namaKelas = $this->kelas ? $this->kelas->nama_kelas : '-';
+        return $this->nis . ' - ' . $this->nama . ' - ' . $namaKelas;
     }
 }

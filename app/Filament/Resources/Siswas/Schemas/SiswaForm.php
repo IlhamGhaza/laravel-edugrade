@@ -48,13 +48,11 @@ class SiswaForm
                     ->label('Nama Siswa')
                     ->required()
                     ->maxLength(255),
-                Select::make('kelas')
+                Select::make('kelas_id')
                     ->label('Kelas')
-                    ->options([
-                        '10' => '10',
-                        '11' => '11',
-                        '12' => '12',
-                    ])
+                    ->relationship('kelas', 'nama_kelas')
+                    ->searchable()
+                    ->preload()
                     ->required(),
             ]);
     }

@@ -21,6 +21,11 @@ class MataPelajaranForm
                     ->label('Nama Mata Pelajaran')
                     ->required()
                     ->maxLength(255),
+                \Filament\Forms\Components\Select::make('kelas')
+                    ->label('Kelas')
+                    ->relationship('kelas', 'nama_kelas')
+                    ->multiple()
+                    ->preload(),
             ]);
     }
 }

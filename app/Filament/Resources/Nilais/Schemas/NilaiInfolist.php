@@ -17,7 +17,7 @@ class NilaiInfolist
                     ->schema([
                         TextEntry::make('siswa.nama')
                             ->label('Siswa'),
-                        TextEntry::make('siswa.kelas')
+                        TextEntry::make('siswa.kelas.nama_kelas')
                             ->label('Kelas')
                             ->badge()
                             ->color('info'),

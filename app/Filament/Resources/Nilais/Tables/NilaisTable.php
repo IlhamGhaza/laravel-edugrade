@@ -34,7 +34,7 @@ class NilaisTable
                     ->sortable()
                     ->searchable()
                     ->toggleable(),
-                TextColumn::make('siswa.kelas')
+                TextColumn::make('siswa.kelas.nama_kelas')
                     ->label('Kelas')
                     ->searchable()
                     ->sortable()
@@ -100,14 +100,10 @@ class NilaisTable
             ->filters([
                 SelectFilter::make('siswa_kelas')
                     ->label('Kelas')
-                    ->options(fn () => Siswa::query()
-                        ->distinct()
-                        ->pluck('kelas', 'kelas')
-                        ->toArray()
-                    )
+                    ->options(fn () => \App\Models\Kelas::pluck('nama_kelas', 'id')->toArray())
                     ->query(function ($query, array $data) {
                         if (filled($data['value'])) {
-                            $query->whereHas('siswa', fn ($q) => $q->where('kelas', $data['value']));
+                            $query->whereHas('siswa', fn ($q) => $q->where('kelas_id', $data['value']));
                         }
                     }),
                 SelectFilter::make('semester')

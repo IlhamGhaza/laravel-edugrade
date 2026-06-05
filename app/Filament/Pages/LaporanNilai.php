@@ -88,7 +88,7 @@ class LaporanNilai extends Page
 
             if (!empty($this->filterKelas)) {
                 $query->whereHas('siswa', function ($q) {
-                    $q->where('kelas', $this->filterKelas);
+                    $q->where('kelas_id', $this->filterKelas);
                 });
             }
 
@@ -130,7 +130,7 @@ class LaporanNilai extends Page
             'totalLulus' => $totalLulus,
             'persenLulus' => $persenLulus,
             'mataPelajarans' => \App\Models\MataPelajaran::all(),
-            'kelasList' => \App\Models\Siswa::select('kelas')->whereNotNull('kelas')->distinct()->pluck('kelas'),
+            'kelasList' => \App\Models\Kelas::pluck('nama_kelas', 'id'),
         ];
     }
 }

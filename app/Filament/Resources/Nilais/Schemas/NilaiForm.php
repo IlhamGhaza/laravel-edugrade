@@ -6,6 +6,7 @@ use App\Models\Guru;
 use App\Models\MataPelajaran;
 use App\Models\Nilai;
 use App\Models\Siswa;
+use App\Models\Kelas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -107,6 +108,32 @@ class NilaiForm
                                 // Reset siswa saat semester berubah
                                 $set('siswa_id', null);
                             }),
+                        Select::make('kelas_id')
+                            ->label('Kelas')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->dehydrated(false)
+                            ->formatStateUsing(function (?Nilai $record) {
+                                return $record?->siswa?->kelas_id;
+                            })
+                            ->options(function (Get $get) {
+                                $guruId = $get('guru_id');
+                                $mapelId = $get('mapel_id');
+                                if (! $guruId || ! $mapelId) {
+                                    return [];
+                                }
+
+                                return Kelas::whereHas('gurus', fn ($q) => $q->where('gurus.id', $guruId))
+                                    ->whereHas('mataPelajarans', fn ($q) => $q->where('mata_pelajarans.id', $mapelId))
+                                    ->pluck('nama_kelas', 'id')
+                                    ->toArray();
+                            })
+                            ->afterStateUpdated(function (Set $set) {
+                                // Reset siswa saat kelas berubah
+                                $set('siswa_id', null);
+                            }),
                         Select::make('siswa_id')
                             ->label('Siswa')
                             ->required()
@@ -116,6 +143,11 @@ class NilaiForm
                                 $guruId = $get('guru_id');
                                 $mapelId = $get('mapel_id');
                                 $semester = $get('semester');
+                                $kelasId = $get('kelas_id');
+
+                                if (!$kelasId) {
+                                    return [];
+                                }
 
                                 // Ambil siswa_id yang sudah punya nilai untuk kombinasi ini
                                 $usedSiswaIds = Nilai::query()
@@ -127,6 +159,7 @@ class NilaiForm
                                     ->toArray();
 
                                 return Siswa::query()
+                                    ->where('kelas_id', $kelasId)
                                     ->whereNotIn('id', $usedSiswaIds)
                                     ->pluck('nama', 'id')
                                     ->toArray();

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\MataPelajarans\Tables;
+namespace App\Filament\Resources\Kelas\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -12,38 +12,24 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class MataPelajaransTable
+class KelasTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('kode_mapel')
-                    ->label('Kode')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable()
-                    ->badge()
-                    ->color('primary'),
-                TextColumn::make('nama_mapel')
-                    ->label('Nama Mata Pelajaran')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('gurus_count')
-                    ->counts('gurus')
-                    ->label('Jumlah Guru')
-                    ->sortable()
-                    ->alignCenter(),
-            //                       ->relationship('kelas', 'nama_kelas')
-                TextColumn::make('kelas.nama_kelas')
-                    ->badge()
-                    ->label('Kelas'),
+                TextColumn::make('nama_kelas')
+                    ->searchable(),
                 TextColumn::make('created_at')
-                    ->dateTime('d M Y')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
-                    ->dateTime('d M Y')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

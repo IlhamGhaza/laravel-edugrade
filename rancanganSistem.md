@@ -21,9 +21,19 @@
 | user_id    | bigint    | Foreign key ke users |
 | nis        | varchar   | NIS unik             |
 | nama       | varchar   | Nama siswa           |
-| kelas      | varchar   | Kelas siswa          |
+| kelas_id   | bigint    | Foreign key ke kelas |
 | created_at | timestamp | Waktu dibuat         |
 | updated_at | timestamp | Waktu diubah         |
+
+### Tabel `kelas`
+
+| Field      | Tipe Data | Keterangan           |
+| ---------- | --------- | -------------------- |
+| id         | bigint    | Primary key          |
+| nama_kelas | varchar   | Nama kelas           |
+| created_at | timestamp | Waktu dibuat         |
+| updated_at | timestamp | Waktu diubah         |
+| deleted_at | timestamp | Soft delete          |
 
 ### Tabel `mata_pelajarans`
 
@@ -59,7 +69,26 @@
 | updated_at | timestamp | Waktu diubah                    |
 
 > Relasi many-to-many: 1 guru bisa mengajar banyak mapel, 1 mapel bisa diajar banyak guru.
-> Unique constraint pada kombinasi `[guru_id, mapel_id]`.
+
+### Tabel `guru_kelas` (Pivot)
+
+| Field      | Tipe Data | Keterangan                      |
+| ---------- | --------- | ------------------------------- |
+| id         | bigint    | Primary key                     |
+| guru_id    | bigint    | Foreign key ke gurus            |
+| kelas_id   | bigint    | Foreign key ke kelas            |
+| created_at | timestamp | Waktu dibuat                    |
+| updated_at | timestamp | Waktu diubah                    |
+
+### Tabel `kelas_mapel` (Pivot)
+
+| Field      | Tipe Data | Keterangan                      |
+| ---------- | --------- | ------------------------------- |
+| id         | bigint    | Primary key                     |
+| kelas_id   | bigint    | Foreign key ke kelas            |
+| mapel_id   | bigint    | Foreign key ke mata_pelajarans  |
+| created_at | timestamp | Waktu dibuat                    |
+| updated_at | timestamp | Waktu diubah                    |
 
 ### Tabel `nilais`
 
@@ -88,15 +117,28 @@
 │ id_guru  │       │ mapel_id   │       │ nama_mapel       │
 │ nama_guru│       └────────────┘       └──────────────────┘
 └──────────┘                                   │
-                                               │ FK
-                                               ▼
-                                         ┌──────────┐
-                                         │  nilais  │
-                                         ├──────────┤
-                                         │ siswa_id │
-                                         │ guru_id  │
-                                         │ mapel_id │
-                                         └──────────┘
+      │                                        │ FK
+      │ M                                      ▼
+      │                                  ┌──────────┐
+      ▼                                  │  nilais  │
+┌────────────┐                           ├──────────┤
+│ guru_kelas │                           │ siswa_id │
+└────────────┘                           │ guru_id  │
+      │ M                                │ mapel_id │
+      ▼                                  └──────────┘
+┌──────────┐ M     ┌─────────────┐ M           ▲
+│  kelas   │◄─────►│ kelas_mapel │◄────────────┘
+├──────────┤       └─────────────┘
+│ id       │              
+│nama_kelas│              
+└──────────┘              
+      │ 1
+      ▼ M
+┌──────────┐
+│  siswas  │
+├──────────┤
+│ kelas_id │
+└──────────┘
 ```
 
 ---
@@ -151,18 +193,38 @@ class Siswa
 {
     public $nis;
     public $nama;
-    public $kelas;
+    public $kelas_id;
 
-    public function __construct($nis, $nama, $kelas)
+    public function __construct($nis, $nama, $kelas_id)
     {
         $this->nis = $nis;
         $this->nama = $nama;
-        $this->kelas = $kelas;
+        $this->kelas_id = $kelas_id;
     }
 
     public function lihatProfil()
     {
-        return $this->nis . ' - ' . $this->nama . ' - ' . $this->kelas;
+        // Relasi kelas dipanggil di sini untuk mendapatkan nama kelas
+        return $this->nis . ' - ' . $this->nama . ' - ' . $this->kelas->nama_kelas;
+    }
+}
+```
+
+### Class `Kelas`
+
+```php
+class Kelas
+{
+    public $namaKelas;
+
+    public function __construct($namaKelas)
+    {
+        $this->namaKelas = $namaKelas;
+    }
+
+    public function siswas()
+    {
+        return $this->hasMany(Siswa::class);
     }
 }
 ```

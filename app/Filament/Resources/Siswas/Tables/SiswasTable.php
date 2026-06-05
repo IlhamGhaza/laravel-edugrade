@@ -44,7 +44,8 @@ class SiswasTable
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                TextColumn::make('kelas')
+                TextColumn::make('kelas.nama_kelas')
+                    ->label('Kelas')
                     ->sortable()
                     ->searchable()
                     ->toggleable(),
@@ -63,13 +64,9 @@ class SiswasTable
             ])
             ->filters([
                 TrashedFilter::make(),
-                SelectFilter::make('kelas')
+                SelectFilter::make('kelas_id')
                     ->label('Filter Kelas')
-                    ->options(fn () => Siswa::query()
-                        ->distinct()
-                        ->pluck('kelas', 'kelas')
-                        ->toArray()
-                    ),
+                    ->relationship('kelas', 'nama_kelas'),
             ])
             ->recordActions([
                 ViewAction::make(),

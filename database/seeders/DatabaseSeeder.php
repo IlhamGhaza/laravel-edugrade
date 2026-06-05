@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Guru;
+use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Nilai;
 use App\Models\Siswa;
@@ -53,6 +54,22 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // =====================================================================
+        //  2.1 Create master data Kelas
+        // =====================================================================
+        $kelasIpa = Kelas::create([
+            'nama_kelas' => 'XII-IPA-1',
+        ]);
+        
+        $kelasIps = Kelas::create([
+            'nama_kelas' => 'XII-IPS-1',
+        ]);
+
+        // Attach kelas ke mapel
+        $mapelMtk->kelas()->attach([$kelasIpa->id, $kelasIps->id]);
+        $mapelBin->kelas()->attach([$kelasIpa->id, $kelasIps->id]);
+        $mapelIpa->kelas()->attach([$kelasIpa->id]);
+
+        // =====================================================================
         //  3. Create demo users
         // =====================================================================
 
@@ -79,6 +96,7 @@ class DatabaseSeeder extends Seeder
         ]);
         // Attach mapel ke guru (many-to-many)
         $guru1->mataPelajarans()->attach([$mapelMtk->id, $mapelIpa->id]);
+        $guru1->kelas()->attach([$kelasIpa->id, $kelasIps->id]);
 
         // Guru 2 — Bahasa Indonesia
         $guruUser2 = User::factory()->create([
@@ -95,6 +113,7 @@ class DatabaseSeeder extends Seeder
         ]);
         // Attach mapel ke guru (many-to-many)
         $guru2->mataPelajarans()->attach([$mapelBin->id]);
+        $guru2->kelas()->attach([$kelasIpa->id]);
 
         // Siswa 1
         $siswaUser1 = User::factory()->create([
@@ -108,7 +127,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => $siswaUser1->id,
             'nis' => '2024001',
             'nama' => 'Andi Prasetyo',
-            'kelas' => 'XII-IPA-1',
+            'kelas_id' => $kelasIpa->id,
         ]);
 
         // Siswa 2
@@ -123,7 +142,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => $siswaUser2->id,
             'nis' => '2024002',
             'nama' => 'Citra Dewi',
-            'kelas' => 'XII-IPA-1',
+            'kelas_id' => $kelasIpa->id,
         ]);
 
         // Siswa 3
@@ -138,7 +157,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => $siswaUser3->id,
             'nis' => '2024003',
             'nama' => 'Rizki Ramadhan',
-            'kelas' => 'XII-IPS-1',
+            'kelas_id' => $kelasIps->id,
         ]);
 
         // =====================================================================

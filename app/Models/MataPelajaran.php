@@ -28,4 +28,9 @@ class MataPelajaran extends Model
     {
         return $this->hasMany(Nilai::class, 'mapel_id');
     }
+
+    public function kelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'kelas_mapel', 'mapel_id', 'kelas_id');
+    }
 }

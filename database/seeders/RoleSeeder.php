@@ -39,7 +39,7 @@ class RoleSeeder extends Seeder
             // Nilai: full CRUD
             'ViewAny:Nilai', 'View:Nilai', 'Create:Nilai', 'Update:Nilai', 'Delete:Nilai',
             // Siswa: view only (untuk select di form Nilai)
-            'ViewAny:Siswa', 'View:Siswa',
+            // 'ViewAny:Siswa', 'View:Siswa',
             // Guru: view own profile
             'ViewAny:Guru', 'View:Guru',
             // Laporan Nilai page

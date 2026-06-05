@@ -41,5 +41,10 @@ class Guru extends Model
     {
         return $this->hasMany(Nilai::class);
     }
+
+    public function kelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'guru_kelas');
+    }
 }
 

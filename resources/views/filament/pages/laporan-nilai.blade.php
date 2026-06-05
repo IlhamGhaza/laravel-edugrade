@@ -371,7 +371,6 @@
             <div class="stat-value">{{ $totalLulus }}</div>
             <div class="stat-label">Siswa Lulus</div>
         </div> --}}
-
         {{-- Persentase Lulus --}}
         {{-- <div class="stat-card stat-persen {{ $persenLulus >= 70 ? 'high' : '' }}">
             <div class="stat-card-bg"></div>
@@ -402,8 +401,8 @@
                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; color: #3f3f46;" class="dark:text-zinc-300">Kelas</label>
                 <select wire:model.live="filterKelas" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid #d4d4d8; font-size: 0.85rem;" class="dark:bg-zinc-800 dark:border-zinc-700 dark:text-white">
                     <option value="">Semua Kelas</option>
-                    @foreach($kelasList as $kelasOption)
-                        <option value="{{ $kelasOption }}">{{ $kelasOption }}</option>
+                    @foreach($kelasList as $id => $namaKelas)
+                        <option value="{{ $id }}">{{ $namaKelas }}</option>
                     @endforeach
                 </select>
             </div>
@@ -493,7 +492,7 @@
                         <td class="col-nama">{{ $nilai->siswa->nama ?? '-' }}</td>
                         <td>
                             <span class="badge badge-kelas">
-                                {{ $nilai->siswa->kelas ?? '-' }}
+                                {{ $nilai->siswa->kelas->nama_kelas ?? '-' }}
                             </span>
                         </td>
                         <td>
