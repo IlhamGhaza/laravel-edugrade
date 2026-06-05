@@ -25,32 +25,79 @@
 | created_at | timestamp | Waktu dibuat         |
 | updated_at | timestamp | Waktu diubah         |
 
+### Tabel `mata_pelajarans`
+
+| Field      | Tipe Data | Keterangan                      |
+| ---------- | --------- | ------------------------------- |
+| id         | bigint    | Primary key                     |
+| kode_mapel | varchar   | Kode unik mapel (MTK, BIN, dll) |
+| nama_mapel | varchar   | Nama mata pelajaran             |
+| created_at | timestamp | Waktu dibuat                    |
+| updated_at | timestamp | Waktu diubah                    |
+| deleted_at | timestamp | Soft delete                     |
+
 ### Tabel `gurus`
 
-| Field          | Tipe Data | Keterangan           |
-| -------------- | --------- | -------------------- |
-| id             | bigint    | Primary key          |
-| user_id        | bigint    | Foreign key ke users |
-| id_guru        | varchar   | ID guru unik         |
-| nama_guru      | varchar   | Nama guru            |
-| mata_pelajaran | varchar   | Mata pelajaran       |
-| created_at     | timestamp | Waktu dibuat         |
-| updated_at     | timestamp | Waktu diubah         |
+| Field      | Tipe Data | Keterangan           |
+| ---------- | --------- | -------------------- |
+| id         | bigint    | Primary key          |
+| user_id    | bigint    | Foreign key ke users |
+| id_guru    | varchar   | ID guru unik         |
+| nama_guru  | varchar   | Nama guru            |
+| created_at | timestamp | Waktu dibuat         |
+| updated_at | timestamp | Waktu diubah         |
+| deleted_at | timestamp | Soft delete          |
+
+### Tabel `guru_mapel` (Pivot)
+
+| Field      | Tipe Data | Keterangan                      |
+| ---------- | --------- | ------------------------------- |
+| id         | bigint    | Primary key                     |
+| guru_id    | bigint    | Foreign key ke gurus            |
+| mapel_id   | bigint    | Foreign key ke mata_pelajarans  |
+| created_at | timestamp | Waktu dibuat                    |
+| updated_at | timestamp | Waktu diubah                    |
+
+> Relasi many-to-many: 1 guru bisa mengajar banyak mapel, 1 mapel bisa diajar banyak guru.
+> Unique constraint pada kombinasi `[guru_id, mapel_id]`.
 
 ### Tabel `nilais`
 
-| Field       | Tipe Data | Keterangan                 |
-| ----------- | --------- | -------------------------- |
-| id          | bigint    | Primary key                |
-| siswa_id    | bigint    | Foreign key ke siswas      |
-| guru_id     | bigint    | Foreign key ke gurus       |
-| nilai_tugas | decimal   | Nilai tugas                |
-| nilai_uts   | decimal   | Nilai UTS                  |
-| nilai_uas   | decimal   | Nilai UAS                  |
-| nilai_akhir | decimal   | Hasil perhitungan otomatis |
-| status      | varchar   | Lulus / Tidak Lulus        |
-| created_at  | timestamp | Waktu dibuat               |
-| updated_at  | timestamp | Waktu diubah               |
+| Field       | Tipe Data | Keterangan                      |
+| ----------- | --------- | ------------------------------- |
+| id          | bigint    | Primary key                     |
+| siswa_id    | bigint    | Foreign key ke siswas           |
+| guru_id     | bigint    | Foreign key ke gurus            |
+| mapel_id    | bigint    | Foreign key ke mata_pelajarans  |
+| nilai_tugas | decimal   | Nilai tugas                     |
+| nilai_uts   | decimal   | Nilai UTS                       |
+| nilai_uas   | decimal   | Nilai UAS                       |
+| nilai_akhir | decimal   | Hasil perhitungan otomatis      |
+| status      | varchar   | Lulus / Tidak Lulus             |
+| created_at  | timestamp | Waktu dibuat                    |
+| updated_at  | timestamp | Waktu diubah                    |
+
+### Diagram Relasi (ERD)
+
+```
+┌──────────┐       ┌────────────┐       ┌──────────────────┐
+│  gurus   │◄──M──►│ guru_mapel │◄──M──►│ mata_pelajarans  │
+├──────────┤       ├────────────┤       ├──────────────────┤
+│ id       │       │ id         │       │ id               │
+│ user_id  │       │ guru_id    │       │ kode_mapel       │
+│ id_guru  │       │ mapel_id   │       │ nama_mapel       │
+│ nama_guru│       └────────────┘       └──────────────────┘
+└──────────┘                                   │
+                                               │ FK
+                                               ▼
+                                         ┌──────────┐
+                                         │  nilais  │
+                                         ├──────────┤
+                                         │ siswa_id │
+                                         │ guru_id  │
+                                         │ mapel_id │
+                                         └──────────┘
+```
 
 ---
 
@@ -120,6 +167,34 @@ class Siswa
 }
 ```
 
+### Class `MataPelajaran`
+
+```php
+class MataPelajaran
+{
+    public $kodMapel;
+    public $namaMapel;
+
+    public function __construct($kodeMapel, $namaMapel)
+    {
+        $this->kodeMapel = $kodeMapel;
+        $this->namaMapel = $namaMapel;
+    }
+
+    // Relasi many-to-many ke Guru
+    public function gurus()
+    {
+        return $this->belongsToMany(Guru::class, 'guru_mapel', 'mapel_id', 'guru_id');
+    }
+
+    // Relasi one-to-many ke Nilai
+    public function nilais()
+    {
+        return $this->hasMany(Nilai::class, 'mapel_id');
+    }
+}
+```
+
 ### Class `Nilai`
 
 ```php
@@ -146,6 +221,12 @@ class Nilai
     public function tentukanStatus()
     {
         return $this->hitungNilaiAkhir() >= 70 ? 'Lulus' : 'Tidak Lulus';
+    }
+
+    // Relasi ke MataPelajaran
+    public function mataPelajaran()
+    {
+        return $this->belongsTo(MataPelajaran::class, 'mapel_id');
     }
 }
 ```

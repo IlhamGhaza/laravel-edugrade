@@ -59,6 +59,7 @@ class NilaiResource extends Resource
     /**
      * Scope query berdasarkan role:
      * - Guru hanya melihat nilai yang dia input
+     * - Siswa hanya melihat nilai miliknya sendiri
      * - Admin melihat semua
      */
     public static function getEloquentQuery(): Builder
@@ -70,6 +71,16 @@ class NilaiResource extends Resource
             $guru = \App\Models\Guru::where('user_id', $user->id)->first();
             if ($guru) {
                 $query->where('guru_id', $guru->id);
+            } else {
+                // Guru belum punya profil, jangan tampilkan apa-apa
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($user && $user->hasRole('siswa')) {
+            $siswa = \App\Models\Siswa::where('user_id', $user->id)->first();
+            if ($siswa) {
+                $query->where('siswa_id', $siswa->id);
+            } else {
+                $query->whereRaw('1 = 0');
             }
         }
 

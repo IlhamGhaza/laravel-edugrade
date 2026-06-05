@@ -10,7 +10,7 @@ class Guru extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['user_id', 'id_guru', 'nama_guru', 'mata_pelajaran'];
+    protected $fillable = ['user_id', 'id_guru', 'nama_guru'];
 
     protected static function boot()
     {
@@ -28,8 +28,18 @@ class Guru extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Relasi many-to-many ke MataPelajaran melalui pivot guru_mapel.
+     */
+    public function mataPelajarans()
+    {
+        return $this->belongsToMany(MataPelajaran::class, 'guru_mapel', 'guru_id', 'mapel_id')
+                    ->withTimestamps();
+    }
+
     public function nilais()
     {
         return $this->hasMany(Nilai::class);
     }
 }
+

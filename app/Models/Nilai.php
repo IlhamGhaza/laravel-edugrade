@@ -20,7 +20,7 @@ class Nilai extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['siswa_id', 'guru_id', 'nilai_tugas', 'nilai_uts', 'nilai_uas', 'nilai_akhir', 'status'];
+    protected $fillable = ['siswa_id', 'guru_id', 'mapel_id', 'semester', 'nilai_tugas', 'nilai_uts', 'nilai_uas', 'nilai_akhir', 'status'];
 
     /**
      * Casts untuk memastikan tipe data yang benar.
@@ -57,6 +57,14 @@ class Nilai extends Model
     public function guru()
     {
         return $this->belongsTo(Guru::class);
+    }
+
+    /**
+     * Relasi ke MataPelajaran — setiap nilai terikat ke mata pelajaran tertentu.
+     */
+    public function mataPelajaran()
+    {
+        return $this->belongsTo(MataPelajaran::class, 'mapel_id');
     }
 
     // =========================================================================

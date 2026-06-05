@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Siswas\Schemas;
 
+use App\Models\Siswa;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -21,11 +22,20 @@ class SiswaForm
                     ->label('User')
                     ->relationship('user', 'name')
                     ->required()
-                    ->options(fn () => User::query()
-                        ->whereHas('roles', fn ($query) => $query->where('name', 'siswa'))
-                        ->pluck('name', 'id')
-                        ->toArray()
-                    )
+                    ->options(function (?Siswa $record) {
+                        // Ambil user_id yang sudah dipakai oleh siswa lain
+                        $usedUserIds = Siswa::query()
+                            ->when($record, fn ($q) => $q->where('id', '!=', $record->id))
+                            ->whereNotNull('user_id')
+                            ->pluck('user_id')
+                            ->toArray();
+
+                        return User::query()
+                            ->whereHas('roles', fn ($query) => $query->where('name', 'siswa'))
+                            ->whereNotIn('id', $usedUserIds)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
                     ->searchable()
                     ->preload()
                     ->helperText('Pilih akun user yang terhubung dengan siswa ini.'),

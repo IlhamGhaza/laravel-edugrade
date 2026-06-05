@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Nilais\Tables;
 
+use App\Models\Guru;
+use App\Models\MataPelajaran;
+use App\Models\Siswa;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -13,10 +16,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
+use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 /**
  * Table schema untuk NilaiResource.
- * Menampilkan data nilai dengan relasi siswa & guru, status berwarna.
+ * Menampilkan data nilai dengan relasi siswa, guru, mapel, dan status berwarna.
  */
 class NilaisTable
 {
@@ -35,12 +40,22 @@ class NilaisTable
                     ->sortable()
                     ->badge()
                     ->color('info'),
+                TextColumn::make('semester')
+                    ->label('Semester')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Ganjil' => 'primary',
+                        'Genap' => 'warning',
+                        default => 'gray',
+                    }),
                 TextColumn::make('guru.nama_guru')
                     ->label('Guru')
                     ->sortable()
                     ->searchable()
                     ->toggleable(),
-                TextColumn::make('guru.mata_pelajaran')
+                TextColumn::make('mataPelajaran.nama_mapel')
                     ->label('Mata Pelajaran')
                     ->searchable()
                     ->sortable()
@@ -83,6 +98,24 @@ class NilaisTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('siswa_kelas')
+                    ->label('Kelas')
+                    ->options(fn () => Siswa::query()
+                        ->distinct()
+                        ->pluck('kelas', 'kelas')
+                        ->toArray()
+                    )
+                    ->query(function ($query, array $data) {
+                        if (filled($data['value'])) {
+                            $query->whereHas('siswa', fn ($q) => $q->where('kelas', $data['value']));
+                        }
+                    }),
+                SelectFilter::make('semester')
+                    ->label('Semester')
+                    ->options([
+                        'Ganjil' => 'Ganjil',
+                        'Genap' => 'Genap',
+                    ]),
                 SelectFilter::make('status')
                     ->label('Status Kelulusan')
                     ->options([
@@ -91,8 +124,37 @@ class NilaisTable
                     ]),
                 SelectFilter::make('guru_id')
                     ->label('Guru')
-                    ->relationship('guru', 'nama_guru')
-                    ->preload()
+                    ->options(function () {
+                        $user = auth()->user();
+                        if ($user && $user->hasRole('guru')) {
+                            // Guru hanya melihat dirinya
+                            return Guru::where('user_id', $user->id)
+                                ->pluck('nama_guru', 'id')
+                                ->toArray();
+                        }
+                        return Guru::pluck('nama_guru', 'id')->toArray();
+                    })
+                    ->visible(function () {
+                        // Sembunyikan filter guru jika yang login adalah guru (tidak perlu filter)
+                        $user = auth()->user();
+                        return !($user && $user->hasRole('guru'));
+                    })
+                    ->searchable(),
+                SelectFilter::make('mapel_id')
+                    ->label('Mata Pelajaran')
+                    ->options(function () {
+                        $user = auth()->user();
+                        if ($user && $user->hasRole('guru')) {
+                            $guru = Guru::where('user_id', $user->id)->first();
+                            if ($guru) {
+                                return MataPelajaran::whereHas('gurus', fn ($q) => $q->where('gurus.id', $guru->id))
+                                    ->pluck('nama_mapel', 'id')
+                                    ->toArray();
+                            }
+                            return [];
+                        }
+                        return MataPelajaran::pluck('nama_mapel', 'id')->toArray();
+                    })
                     ->searchable(),
             ])
             ->recordActions([
@@ -103,10 +165,16 @@ class NilaisTable
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(fn (Post $record) => $record->delete()),
+                    ->action(fn ($record) => $record->delete()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exports([
+                            ExcelExport::make('table')
+                                ->fromTable()
+                                ->withFilename(fn () => 'nilai-siswa-' . date('Y-m-d')),
+                        ]),
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),

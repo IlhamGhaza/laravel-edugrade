@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Siswas\Tables;
 
 use App\Models\Siswa;
-use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -14,6 +14,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 /**
  * Table schema untuk SiswaResource.
@@ -26,12 +28,6 @@ class SiswasTable
         return $table
 
             ->columns([
-                TextColumn::make('user.name')
-                    ->numeric()
-                    ->label('Nama User')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
                 TextColumn::make('nis')
                     ->label('NIS')
                     ->searchable()
@@ -41,6 +37,12 @@ class SiswasTable
                     ->label('Nama Siswa')
                     ->sortable()
                     ->searchable()
+                    ->toggleable(),
+                TextColumn::make('user.name')
+                    ->numeric()
+                    ->label('Nama User')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(),
                 TextColumn::make('kelas')
                     ->sortable()
@@ -72,18 +74,16 @@ class SiswasTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                Action::make('delete')
-                    ->label('Hapus')
-                    ->icon('heroicon-o-trash')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->action(fn (Post $record) => $record->delete()),
-                // DeleteAction::make(),
-                // ForceDeleteAction::make(),
-                // RestoreAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exports([
+                            ExcelExport::make('table')
+                                ->fromTable()
+                                ->withFilename(fn () => 'data-siswa-'.date('Y-m-d')),
+                        ]),
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),

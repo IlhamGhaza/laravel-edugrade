@@ -44,6 +44,8 @@ class RoleSeeder extends Seeder
             'ViewAny:Guru', 'View:Guru',
             // Laporan Nilai page
             'View:LaporanNilai',
+            // Mata Pelajaran: view only (untuk select di form Nilai)
+            'ViewAny:MataPelajaran', 'View:MataPelajaran',
         ];
 
         $guruPermissions = Permission::whereIn('name', $guruPermissionNames)->get();

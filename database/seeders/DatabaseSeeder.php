@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Guru;
+use App\Models\MataPelajaran;
 use App\Models\Nilai;
 use App\Models\Siswa;
 use App\Models\User;
@@ -15,8 +16,10 @@ use Illuminate\Support\Facades\Hash;
  * Urutan seed:
  * 1. ShieldSeeder  → membuat permissions & role super_admin
  * 2. RoleSeeder    → membuat role admin, guru, siswa + assign permissions
- * 3. Demo users    → user beserta profil siswa/guru
- * 4. Demo nilai    → data nilai sample
+ * 3. Mata Pelajaran → master data mapel
+ * 4. Demo users    → user beserta profil siswa/guru
+ * 5. Pivot guru-mapel → relasi guru ↔ mapel
+ * 6. Demo nilai    → data nilai sample
  */
 class DatabaseSeeder extends Seeder
 {
@@ -32,7 +35,25 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // =====================================================================
-        //  2. Create demo users
+        //  2. Create master data Mata Pelajaran
+        // =====================================================================
+        $mapelMtk = MataPelajaran::create([
+            'kode_mapel' => 'MTK',
+            'nama_mapel' => 'Matematika',
+        ]);
+
+        $mapelBin = MataPelajaran::create([
+            'kode_mapel' => 'BIN',
+            'nama_mapel' => 'Bahasa Indonesia',
+        ]);
+
+        $mapelIpa = MataPelajaran::create([
+            'kode_mapel' => 'IPA',
+            'nama_mapel' => 'Ilmu Pengetahuan Alam',
+        ]);
+
+        // =====================================================================
+        //  3. Create demo users
         // =====================================================================
 
         // Super Admin
@@ -43,7 +64,7 @@ class DatabaseSeeder extends Seeder
         ]);
         $superAdmin->assignRole('super_admin');
 
-        // Guru 1 — Matematika
+        // Guru 1 — Matematika & IPA
         $guruUser1 = User::factory()->create([
             'name' => 'Budi Santoso',
             'email' => 'guru1@edugrade.com',
@@ -55,8 +76,9 @@ class DatabaseSeeder extends Seeder
             'user_id' => $guruUser1->id,
             'id_guru' => 'GR-001',
             'nama_guru' => 'Budi Santoso',
-            'mata_pelajaran' => 'Matematika',
         ]);
+        // Attach mapel ke guru (many-to-many)
+        $guru1->mataPelajarans()->attach([$mapelMtk->id, $mapelIpa->id]);
 
         // Guru 2 — Bahasa Indonesia
         $guruUser2 = User::factory()->create([
@@ -70,8 +92,9 @@ class DatabaseSeeder extends Seeder
             'user_id' => $guruUser2->id,
             'id_guru' => 'GR-002',
             'nama_guru' => 'Siti Nurhaliza',
-            'mata_pelajaran' => 'Bahasa Indonesia',
         ]);
+        // Attach mapel ke guru (many-to-many)
+        $guru2->mataPelajarans()->attach([$mapelBin->id]);
 
         // Siswa 1
         $siswaUser1 = User::factory()->create([
@@ -119,14 +142,16 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // =====================================================================
-        //  3. Create demo nilai
+        //  4. Create demo nilai
         //     Menggunakan model event 'saving' yang akan auto-hitung nilai_akhir & status
         // =====================================================================
 
-        // Nilai Matematika (Guru 1)
+        // Nilai Matematika (Guru 1, Mapel MTK)
         Nilai::create([
             'siswa_id' => $siswa1->id,
             'guru_id' => $guru1->id,
+            'mapel_id' => $mapelMtk->id,
+            'semester' => 'Ganjil',
             'nilai_tugas' => 85,
             'nilai_uts' => 78,
             'nilai_uas' => 82,
@@ -135,6 +160,8 @@ class DatabaseSeeder extends Seeder
         Nilai::create([
             'siswa_id' => $siswa2->id,
             'guru_id' => $guru1->id,
+            'mapel_id' => $mapelMtk->id,
+            'semester' => 'Ganjil',
             'nilai_tugas' => 92,
             'nilai_uts' => 88,
             'nilai_uas' => 95,
@@ -143,15 +170,19 @@ class DatabaseSeeder extends Seeder
         Nilai::create([
             'siswa_id' => $siswa3->id,
             'guru_id' => $guru1->id,
+            'mapel_id' => $mapelMtk->id,
+            'semester' => 'Genap',
             'nilai_tugas' => 60,
             'nilai_uts' => 55,
             'nilai_uas' => 65,
         ]);
 
-        // Nilai Bahasa Indonesia (Guru 2)
+        // Nilai Bahasa Indonesia (Guru 2, Mapel BIN)
         Nilai::create([
             'siswa_id' => $siswa1->id,
             'guru_id' => $guru2->id,
+            'mapel_id' => $mapelBin->id,
+            'semester' => 'Ganjil',
             'nilai_tugas' => 78,
             'nilai_uts' => 82,
             'nilai_uas' => 80,
@@ -160,6 +191,8 @@ class DatabaseSeeder extends Seeder
         Nilai::create([
             'siswa_id' => $siswa2->id,
             'guru_id' => $guru2->id,
+            'mapel_id' => $mapelBin->id,
+            'semester' => 'Genap',
             'nilai_tugas' => 90,
             'nilai_uts' => 85,
             'nilai_uas' => 88,
@@ -168,6 +201,8 @@ class DatabaseSeeder extends Seeder
         Nilai::create([
             'siswa_id' => $siswa3->id,
             'guru_id' => $guru2->id,
+            'mapel_id' => $mapelBin->id,
+            'semester' => 'Genap',
             'nilai_tugas' => 70,
             'nilai_uts' => 65,
             'nilai_uas' => 72,

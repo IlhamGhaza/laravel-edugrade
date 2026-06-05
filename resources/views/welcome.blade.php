@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="EduGrade — Sistem Pengolahan Nilai Siswa berbasis web. Kelola data siswa, input nilai, dan lihat laporan hasil belajar dengan mudah.">
-    <title>EduGrade — Sistem Pengolahan Nilai Siswa</title>
+    <meta name="description" content="Edutech — Sistem Pengolahan Nilai Siswa berbasis web. Kelola data siswa, input nilai, dan lihat laporan hasil belajar dengan mudah.">
+    <title>Edutech — Sistem Pengolahan Nilai Siswa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* ============================================
-           DESIGN SYSTEM — EduGrade Landing Page
+           DESIGN SYSTEM — Edutech Landing Page
            ============================================ */
         :root {
             --primary-50: #eef2ff;
@@ -818,7 +818,7 @@
         <div class="container navbar__inner">
             <a href="/" class="navbar__brand">
                 <div class="navbar__logo">E</div>
-                EduGrade
+                Edutech
             </a>
             <ul class="navbar__links">
                 <li><a href="#features">Fitur</a></li>
@@ -847,7 +847,7 @@
                     Sistem Informasi Akademik
                 </div>
                 <h1 class="hero__title">
-                    Kelola Nilai Siswa<br>dengan <span>EduGrade</span>
+                    Kelola Nilai Siswa<br>dengan <span>Edutech</span>
                 </h1>
                 <p class="hero__subtitle">
                     Platform pengolahan nilai siswa yang cepat, rapi, dan terstruktur.
@@ -1056,7 +1056,7 @@
         <div class="container">
             <div class="cta__card">
                 <div class="cta__content">
-                    <h2 class="cta__title">Siap Menggunakan EduGrade?</h2>
+                    <h2 class="cta__title">Siap Menggunakan Edutech?</h2>
                     <p class="cta__desc">
                         Masuk ke panel administrasi untuk mulai mengelola data siswa,
                         input nilai, dan melihat laporan hasil belajar.
@@ -1075,7 +1075,7 @@
     <!-- ======== FOOTER ======== -->
     <footer class="footer">
         <div class="container footer__inner">
-            <span class="footer__copy">&copy; {{ date('Y') }} EduGrade — Sistem Pengolahan Nilai Siswa</span>
+            <span class="footer__copy">&copy; {{ date('Y') }} Edutech — Sistem Pengolahan Nilai Siswa</span>
             <div class="footer__tech">
                 <span class="footer__tech-badge">Laravel</span>
                 <span class="footer__tech-badge">Filament</span>

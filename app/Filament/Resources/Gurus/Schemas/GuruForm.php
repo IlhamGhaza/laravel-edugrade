@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Gurus\Schemas;
 
+use App\Models\Guru;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,11 +18,20 @@ class GuruForm
                     ->label('Akun User')
                     ->required()
                     ->relationship('user', 'name')
-                    ->options(fn () => User::query()
-                        ->whereHas('roles', fn ($query) => $query->where('name', 'guru'))
-                        ->pluck('name', 'id')
-                        ->toArray()
-                    )
+                    ->options(function (?Guru $record) {
+                        // Ambil user_id yang sudah dipakai oleh guru lain
+                        $usedUserIds = Guru::query()
+                            ->when($record, fn ($q) => $q->where('id', '!=', $record->id))
+                            ->whereNotNull('user_id')
+                            ->pluck('user_id')
+                            ->toArray();
+
+                        return User::query()
+                            ->whereHas('roles', fn ($query) => $query->where('name', 'guru'))
+                            ->whereNotIn('id', $usedUserIds)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
                     ->searchable()
                     ->preload(),
                 TextInput::make('id_guru')
@@ -33,16 +43,13 @@ class GuruForm
                     ->label('Nama Guru')
                     ->required()
                     ->maxLength(255),
-                Select::make('mata_pelajaran')
+                Select::make('mataPelajarans')
                     ->label('Mata Pelajaran')
-                    ->required()
-                    ->options(fn () => \App\Models\Guru::query()
-                        ->distinct()
-                        ->pluck('mata_pelajaran', 'mata_pelajaran')
-                        ->toArray()
-                    )
+                    ->relationship('mataPelajarans', 'nama_mapel')
+                    ->multiple()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->helperText('Pilih satu atau lebih mata pelajaran yang diampu guru ini.'),
             ]);
     }
 }

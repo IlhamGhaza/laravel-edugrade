@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('EduGrade')
+            ->brandName('Edutech')
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,

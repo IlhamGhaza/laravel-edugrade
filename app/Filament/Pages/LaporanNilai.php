@@ -34,34 +34,88 @@ class LaporanNilai extends Page
 
     protected string $view = 'filament.pages.laporan-nilai';
 
-    public function getViewData(): array
+    public $searchSiswa = '';
+    public $filterKelas = '';
+    public $filterMapel = '';
+    public $filterSemester = '';
+    public $filterStatus = '';
+
+    protected $queryString = [
+        'searchSiswa' => ['except' => ''],
+        'filterKelas' => ['except' => ''],
+        'filterMapel' => ['except' => ''],
+        'filterSemester' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
+    ];
+
+    public function resetFilters()
+    {
+        $this->searchSiswa = '';
+        $this->filterKelas = '';
+        $this->filterMapel = '';
+        $this->filterSemester = '';
+        $this->filterStatus = '';
+    }
+
+    public function getFilteredNilais()
     {
         $user = auth()->user();
-        $nilais = collect();
+        $query = Nilai::with(['guru', 'siswa', 'mataPelajaran']);
 
         if ($user->hasRole('siswa')) {
-            // Siswa: hanya lihat nilai pribadinya
             $siswa = Siswa::where('user_id', $user->id)->first();
             if ($siswa) {
-                $nilais = Nilai::with(['guru', 'siswa'])
-                    ->where('siswa_id', $siswa->id)
-                    ->get();
+                $query->where('siswa_id', $siswa->id);
+            } else {
+                return collect();
             }
         } elseif ($user->hasRole('guru')) {
-            // Guru: lihat nilai yang dia input
             $guru = Guru::where('user_id', $user->id)->first();
             if ($guru) {
-                $nilais = Nilai::with(['guru', 'siswa'])
-                    ->where('guru_id', $guru->id)
-                    ->get();
+                $query->where('guru_id', $guru->id);
+            } else {
+                return collect();
             }
-        } elseif ($user->hasRole(['admin', 'super_admin'])) {
-            // Admin: lihat semua
-            $nilais = Nilai::with(['guru', 'siswa'])->get();
         }
 
-        // Penerapan pemrograman terstruktur (prosedural):
+        // Apply filters only for admin/super_admin
+        if ($user->hasRole(['admin', 'super_admin'])) {
+            if (!empty($this->searchSiswa)) {
+                $query->whereHas('siswa', function ($q) {
+                    $q->where('nama', 'like', '%' . $this->searchSiswa . '%');
+                });
+            }
+
+            if (!empty($this->filterKelas)) {
+                $query->whereHas('siswa', function ($q) {
+                    $q->where('kelas', $this->filterKelas);
+                });
+            }
+
+            if (!empty($this->filterMapel)) {
+                $query->where('mapel_id', $this->filterMapel);
+            }
+
+            if (!empty($this->filterSemester)) {
+                $query->where('semester', $this->filterSemester);
+            }
+        }
+
+        $nilais = $query->get();
         $nilais = buatLaporanNilai($nilais);
+
+        if ($user->hasRole(['admin', 'super_admin']) && !empty($this->filterStatus)) {
+            $nilais = $nilais->filter(function ($nilai) {
+                return $nilai->status === $this->filterStatus;
+            });
+        }
+
+        return $nilais;
+    }
+
+    public function getViewData(): array
+    {
+        $nilais = $this->getFilteredNilais();
 
         // Statistik summary
         $totalData = $nilais->count();
@@ -75,6 +129,8 @@ class LaporanNilai extends Page
             'rataRata' => $rataRata,
             'totalLulus' => $totalLulus,
             'persenLulus' => $persenLulus,
+            'mataPelajarans' => \App\Models\MataPelajaran::all(),
+            'kelasList' => \App\Models\Siswa::select('kelas')->whereNotNull('kelas')->distinct()->pluck('kelas'),
         ];
     }
 }

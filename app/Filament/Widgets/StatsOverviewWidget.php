@@ -89,7 +89,7 @@ class StatsOverviewWidget extends BaseWidget
         $tidakLulus = $totalNilai - $lulus;
 
         return [
-            Stat::make('Mata Pelajaran', $guru->mata_pelajaran)
+            Stat::make('Mata Pelajaran', $guru->mataPelajarans->pluck('nama_mapel')->join(', ') ?: '-')
                 ->description('Mapel yang diampu')
                 ->descriptionIcon('heroicon-o-book-open')
                 ->color('primary'),
